@@ -1,0 +1,30 @@
+{
+  "name": "monitor-twitter",
+  "version": "1.0.0",
+  "description": "Monitor Twitter for tweets from a certain user that match a given pattern.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/matthewpalmer/monitor-twitter.git"
+  },
+  "keywords": [
+    "monitor",
+    "twitter",
+    "watch",
+    "pattern",
+    "tweet",
+    "match"
+  ],
+  "author": "Matthew Palmer",
+  "license": "BSD-2-Clause",
+  "bugs": {
+    "url": "https://github.com/matthewpalmer/monitor-twitter/issues"
+  },
+  "dependencies": {
+    "twit": "~1.1.18",
+    "underscore": "~1.7.0"
+  }
+}
