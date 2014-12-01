@@ -1,4 +1,4 @@
-var Monitor = require('./monitor-twitter');
+var Monitor = require('monitor-twitter');
 var config = require('./config');
 
 var m = new Monitor(config);
