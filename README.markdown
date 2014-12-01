@@ -1,5 +1,5 @@
 # monitor-twitter
-> A Node.js module to Monitor Twitter for tweets from a user that match a pattern.
+> A Node.js module to monitor Twitter for tweets from a user that match a pattern.
 
 ## Install
 
