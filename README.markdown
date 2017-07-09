@@ -5,6 +5,9 @@
 
 `npm install monitor-twitter`
 
+Note: this gets the id_str not the id. id_str is what's used to identify tweets. See this: 
+https://dev.twitter.com/overview/api/twitter-ids-json-and-snowflake
+
 
 ## Example
 
