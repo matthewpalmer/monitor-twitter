@@ -70,7 +70,7 @@ function Monitor(config) {
 
   this.stripData = function stripData(data) {
     return _.map(data, function(d) {
-        return {text: d.text, id: d.id};
+        return {text: d.text, id: d.id_str};
       });
   };
 
