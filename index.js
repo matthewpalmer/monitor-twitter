@@ -1,42 +1,40 @@
-var fs = require('fs');
-var events = require('events');
-var spawn = require('child_process').spawn;
-var Twit = require('twit');
-var _ = require('underscore');
+const events = require('events');
+const Twit = require('twit');
+const _ = require('underscore');
 
-function Monitor(config) {
-  var T = new Twit({
-    consumer_key: config.consumer_key,
-    consumer_secret: config.consumer_secret,
-    access_token: config.access_token,
-    access_token_secret: config.access_token_secret
-  });
+class Monitor extends events.EventEmitter{
+  /**
+   * @param {{consumer_key: string, consumer_secret: string, access_token: string, access_token_secret: string}} config
+    */
+  constructor(config){
+    this.T = new Twit({
+      consumer_key: config.consumer_key,
+      consumer_secret: config.consumer_secret,
+      access_token: config.access_token,
+      access_token_secret: config.access_token_secret,
+    });
+    this._mostRecentTweet = {};
+  }
 
-  var self = this;
-
-  this.T = T;
-
-  // The events we emit.
-  var Event = {
-    NewMatchingTweet: 'NewMatchingTweet'
-  };
-
-  var eventEmitter = new events.EventEmitter();
-
-  this.newTweet = eventEmitter;
-
-  this.mostRecentTweet = {};
-
-  this.watchTwitter = function watchTwitter(account, pattern, interval) {
-    setInterval(function() {
-      self.pollTwitter(account, pattern);
+  /**
+   * @param {string} account 
+   * @param {string} pattern regex
+   * @param {number} interval milliseconds
+   */
+  watchTwitter(account, pattern, interval) {
+    setInterval(() => {
+      this._pollTwitter(account, pattern);
     }, interval);
   };
 
-  this.pollTwitter = function pollTwitter(account, pattern) {
-    var path = 'statuses/user_timeline';
+  /**
+   * @param {string} account 
+   * @param {string} pattern regex
+   */
+  _pollTwitter(account, pattern) {
+    const path = 'statuses/user_timeline';
 
-    var options = {
+    const options = {
       'screen_name': account,
       'trim_user': 'true',
       'exclude_replies': 'true'
@@ -44,52 +42,65 @@ function Monitor(config) {
 
     // If we've already gotten a list of tweets,
     // we only want to get the ones *after* the one we have stored.
-    if (self.mostRecentTweet[account]) {
-      options.since_id = self.mostRecentTweet[account];
+    if (this._mostRecentTweet[account]) {
+      options.since_id = this._mostRecentTweet[account];
     }
 
-    T.get(path, options, function(err, data, response) {
-      data = self.stripData(data);
-      data = self.matchPattern(data, pattern);
+    this.T.get(path, options, (err, data, response) => {
+      data = this._stripData(data);
+      data = this._matchPattern(data, pattern);
 
       if (data.length > 0) {
-        self.newMatchingTweet(account, data[0]);
+        this._newMatchingTweet(account, data[0]);
       }
     });
   };
 
-  this.newMatchingTweet = function newMatchingTweet(account, tweet) {
-    var didFindNewerTweet = tweet.id > (self.mostRecentTweet[account] || 0);
-
-    if (didFindNewerTweet) {
-      self.mostRecentTweet[account] = tweet.id;
-
-      self.emitNotificationForNewTweet(account, tweet);
+  /**
+   * @param {string} account 
+   * @param {*} tweet 
+   */
+  _newMatchingTweet(account, tweet) {
+    if (tweet.id > (this._mostRecentTweet[account] || 0)) {
+      this._mostRecentTweet[account] = tweet.id;
+      this._emitNotificationForNewTweet(account, tweet);
     }
   };
 
-  this.stripData = function stripData(data) {
+  _stripData(data) {
     return _.map(data, function(d) {
-        return {text: d.text, id: d.id};
+        return {text: d.text, id: d.id_str};
       });
   };
 
-  this.matchPattern = function matchPattern(data, pattern) {
+  /**
+   * @param {[{text:string}]} data 
+   * @param {string} pattern regex
+   */
+  _matchPattern(data, pattern) {
     return _.filter(data, function(d) {
       return d.text.match(pattern);
     });
   };
 
-  this.emitNotificationForNewTweet = function emitNotificationForNewTweet(account, tweet) {
+  /**
+   * @param {string} account 
+   * @param {*} tweet 
+   */
+  _emitNotificationForNewTweet(account, tweet) {
     tweet.account = account;
-    self.emit(account, tweet);
+    this.emit(account, tweet);
+  };
+
+  /**
+   * @param {string} account 
+   * @param {string} pattern regex
+   * @param {number} interval milliseconds
+   */
+  start(account, pattern, interval) {
+    const regex = new RegExp(pattern);
+    this.watchTwitter(account, regex, interval);
   };
 }
-
-Monitor.prototype = new events.EventEmitter;
-Monitor.prototype.start = function(account, pattern, interval) {
-  var regex = new RegExp(pattern);
-  this.watchTwitter(account, regex, interval);
-};
 
 module.exports = Monitor;
