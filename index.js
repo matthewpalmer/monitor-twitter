@@ -10,7 +10,6 @@ class Monitor extends events.EventEmitter{
       access_token: config.access_token,
       access_token_secret: config.access_token_secret,
     });
-    this.newTweet = new events.EventEmitter();
     this.mostRecentTweet = {};
   }
 
