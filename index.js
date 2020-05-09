@@ -1,4 +1,3 @@
-const fs = require('fs');
 const events = require('events');
 const Twit = require('twit');
 const _ = require('underscore');
